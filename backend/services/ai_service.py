@@ -7,25 +7,41 @@ from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
-# List of models in order of priority. If one encounters high demand (503) or 404, it falls back to the next.
+# List of models in order of verified real-time availability and low latency.
+# If one encounters high demand (503) or quota exhaustion (429), it automatically falls back to the next.
 GEMINI_MODELS = [
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash",
+    "gemini-3-flash-preview",
     "gemini-3.6-flash",
+    "gemini-3.1-flash-lite-preview",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
     "gemini-2.5-flash",
     "gemini-1.5-flash"
 ]
 
 def _clean_json_string(raw: str) -> str:
-    """Strip markdown code fences and clean JSON string."""
+    """Extract valid JSON from raw LLM output even if surrounded by thoughts or markdown fences."""
     cleaned = raw.strip()
-    if cleaned.startswith("```json"):
-        cleaned = cleaned[7:]
-    elif cleaned.startswith("```"):
-        cleaned = cleaned[3:]
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3]
-    return cleaned.strip()
+    
+    # Check for markdown code fences (```json ... ``` or ``` ... ```)
+    fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", cleaned, re.IGNORECASE)
+    if fence_match:
+        cleaned = fence_match.group(1).strip()
+
+    # If it still contains non-JSON wrapper text, locate the outermost JSON structure
+    start_brace = cleaned.find("{")
+    start_bracket = cleaned.find("[")
+    
+    if start_brace != -1 and (start_bracket == -1 or start_brace < start_bracket):
+        end_brace = cleaned.rfind("}")
+        if end_brace != -1 and end_brace > start_brace:
+            return cleaned[start_brace:end_brace + 1].strip()
+    elif start_bracket != -1:
+        end_bracket = cleaned.rfind("]")
+        if end_bracket != -1 and end_bracket > start_bracket:
+            return cleaned[start_bracket:end_bracket + 1].strip()
+            
+    return cleaned
 
 def _dynamic_extract_skills_from_text(text: str) -> List[str]:
     """Scan text for common industry skills dynamically."""
@@ -42,7 +58,6 @@ def _dynamic_extract_skills_from_text(text: str) -> List[str]:
     found = []
     text_lower = text.lower()
     for s in KNOWN_SKILLS:
-        # Match whole word boundary
         pattern = r"\b" + re.escape(s.lower()) + r"\b"
         if re.search(pattern, text_lower):
             found.append(s)
@@ -60,15 +75,12 @@ def _heuristic_fallback_response(prompt: str) -> Dict[str, Any]:
         role_match = re.search(r"target role:\s*([^\n\r,]+)", prompt, re.IGNORECASE)
         role = role_match.group(1).strip() if role_match else "Software Engineer"
         
-        # Dynamically scan the resume text included in the prompt
         found_skills = _dynamic_extract_skills_from_text(prompt)
         if not found_skills:
             found_skills = ["Software Engineering Fundamentals", "Git", "Problem Solving", "Object-Oriented Design"]
         
-        # Calculate dynamic score based on skills found and text density
         score = min(92, max(55, 50 + len(found_skills) * 6))
         
-        # Identify missing skills by comparing with standard stack for role
         role_lower = role.lower()
         potential_missing = ["Docker", "Kubernetes", "CI/CD Pipelines", "System Design & Architecture", "Cloud Infrastructure (AWS/GCP)", "Performance Optimization"]
         if "frontend" in role_lower or "react" in role_lower:
@@ -117,7 +129,7 @@ def _heuristic_fallback_response(prompt: str) -> Dict[str, Any]:
 
     # 3. Interview Prep: Start
     if "interview" in p_lower and "generate" in p_lower and "questions" in p_lower and "answer" not in p_lower:
-        role_match = re.search(r"role:\s*([^\n\r,]+)", prompt, re.IGNORECASE)
+        role_match = re.search(r"target role:\s*([^\n\r,]+)", prompt, re.IGNORECASE) or re.search(r"role:\s*([^\n\r,]+)", prompt, re.IGNORECASE)
         role = role_match.group(1).strip() if role_match else "Software Engineer"
         
         diff_match = re.search(r"difficulty:\s*([^\n\r,]+)", prompt, re.IGNORECASE)
@@ -132,7 +144,7 @@ def _heuristic_fallback_response(prompt: str) -> Dict[str, Any]:
         }
 
     # 4. Interview Prep: Answer Evaluation
-    if "interview" in p_lower and ("feedback" in p_lower or "evaluate" in p_lower or "grading" in p_lower):
+    if "interview" in p_lower and ("feedback" in p_lower or "evaluate" in p_lower or "grading" in p_lower or "candidate's answer" in p_lower):
         return {
             "score": 85,
             "feedback": "Strong, well-structured answer! You clearly explained your thought process and addressed key trade-offs.",
@@ -163,7 +175,7 @@ def _heuristic_fallback_response(prompt: str) -> Dict[str, Any]:
         }
 
     # 6. RAG / Learn Question Answering
-    if "sources" in p_lower or "learn" in p_lower or "rag" in p_lower:
+    if "sources" in p_lower or "learn" in p_lower or "rag" in p_lower or "mentor" in p_lower:
         return {
             "answer": "Focus on demonstrable full-stack projects, system design fundamentals, and structured behavioral communication using the STAR method.",
             "sources": ["CareerAI Engineering Guide 2026", "Tech Interview Playbook"]
@@ -175,7 +187,7 @@ def _heuristic_fallback_response(prompt: str) -> Dict[str, Any]:
 def call_ai(prompt: str, response_format: str = "json") -> Dict[str, Any]:
     """
     Single unified AI gateway function.
-    Calls Gemini API (with modern active model fallback) or OpenAI API.
+    Calls active Gemini API models with smart fallback, or OpenAI API.
     Ensures strict JSON return format without prose or markdown fences.
     """
     prompt_with_instructions = (
@@ -200,17 +212,16 @@ def call_ai(prompt: str, response_format: str = "json") -> Dict[str, Any]:
                     resp = client.post(url, json=payload)
                     if resp.status_code == 200:
                         data = resp.json()
-                        raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
+                        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+                        text_parts = [p.get("text", "") for p in parts if isinstance(p, dict) and "text" in p and p.get("text")]
+                        raw_text = "\n".join(text_parts).strip()
                         cleaned = _clean_json_string(raw_text)
+                        parsed = json.loads(cleaned)
                         logger.info(f"Gemini model '{model}' responded successfully.")
-                        return json.loads(cleaned)
-                    elif resp.status_code in [404, 503]:
-                        # Try next model in fallback list
-                        logger.warning(f"Gemini model '{model}' returned {resp.status_code}. Trying next model...")
-                        continue
+                        return parsed
                     else:
-                        logger.warning(f"Gemini API returned status {resp.status_code}: {resp.text[:200]}")
-                        break
+                        logger.warning(f"Gemini model '{model}' returned status {resp.status_code}: {resp.text[:150]}. Trying next candidate...")
+                        continue
             except Exception as e:
                 logger.error(f"Gemini call to {model} failed: {e}. Trying next...")
                 continue
@@ -241,7 +252,7 @@ def call_ai(prompt: str, response_format: str = "json") -> Dict[str, Any]:
                     logger.info("OpenAI responded successfully.")
                     return json.loads(cleaned)
                 else:
-                    logger.warning(f"OpenAI API returned status {resp.status_code}: {resp.text[:200]}")
+                    logger.warning(f"OpenAI API returned status {resp.status_code}: {resp.text[:150]}")
         except Exception as e:
             logger.error(f"OpenAI API call failed: {e}. Falling back.")
 
