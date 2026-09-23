@@ -221,3 +221,23 @@ def get_interview_detail(
         ]
     )
 
+@router.delete("/{interview_id}")
+def delete_interview(
+    interview_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    interview = (
+        db.query(Interview)
+        .filter(Interview.id == interview_id, Interview.user_id == current_user.id)
+        .first()
+    )
+    if not interview:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interview not found."
+        )
+    db.delete(interview)
+    db.commit()
+    return {"status": "success", "message": "Interview deleted successfully."}
+

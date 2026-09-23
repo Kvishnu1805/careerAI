@@ -9,7 +9,8 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
-  AlertCircle
+  AlertCircle,
+  RotateCcw
 } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -47,11 +48,19 @@ const RoadmapPage = () => {
         current_skills: user?.skills || [],
       });
       setRoadmapData(res.data);
+      // Reset checklist and progress to 0% for the newly generated curriculum
+      setCompletedItems({});
+      localStorage.removeItem('careerai_completed_roadmap_items');
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to generate roadmap.');
     } finally {
       setRegenerating(false);
     }
+  };
+
+  const handleResetProgress = () => {
+    setCompletedItems({});
+    localStorage.removeItem('careerai_completed_roadmap_items');
   };
 
   useEffect(() => {
@@ -64,10 +73,22 @@ const RoadmapPage = () => {
     localStorage.setItem('careerai_completed_roadmap_items', JSON.stringify(next));
   };
 
-  // Calculate completion percentage
-  const allSubtopics = roadmapData?.roadmap?.weeks?.flatMap((w) => w.subtopics) || [];
-  const totalCount = allSubtopics.length;
-  const completedCount = allSubtopics.filter((_, idx) => completedItems[`item_${idx}`]).length;
+  // Calculate completion percentage using matching week and subtopic keys
+  let totalCount = 0;
+  let completedCount = 0;
+  if (roadmapData?.roadmap?.weeks) {
+    roadmapData.roadmap.weeks.forEach((w) => {
+      if (Array.isArray(w.subtopics)) {
+        w.subtopics.forEach((_, sIdx) => {
+          totalCount += 1;
+          const itemKey = `week_${w.week}_sub_${sIdx}`;
+          if (completedItems[itemKey]) {
+            completedCount += 1;
+          }
+        });
+      }
+    });
+  }
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
@@ -84,14 +105,27 @@ const RoadmapPage = () => {
           </p>
         </div>
 
-        <button
-          onClick={generateRoadmap}
-          disabled={regenerating}
-          className="self-start sm:self-auto inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors border border-slate-300/80 shadow-xs disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? 'animate-spin' : ''}`} />
-          <span>Regenerate Curriculum</span>
-        </button>
+        <div className="flex items-center space-x-2 self-start sm:self-auto">
+          {completedCount > 0 && (
+            <button
+              onClick={handleResetProgress}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-semibold text-xs transition-colors border border-slate-300/80 shadow-xs"
+              title="Reset progress to 0%"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Progress</span>
+            </button>
+          )}
+
+          <button
+            onClick={generateRoadmap}
+            disabled={regenerating}
+            className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors border border-slate-300/80 shadow-xs disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? 'animate-spin' : ''}`} />
+            <span>Regenerate Curriculum</span>
+          </button>
+        </div>
       </div>
 
       {error && (

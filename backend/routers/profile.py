@@ -44,3 +44,13 @@ def update_profile(
     db.refresh(current_user)
     return _format_profile(current_user)
 
+@router.delete("", status_code=200)
+def delete_account(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Permanently delete user account and cascade delete all associated data."""
+    db.delete(current_user)
+    db.commit()
+    return {"status": "success", "message": "Account and all associated data permanently deleted."}
+

@@ -10,7 +10,8 @@ import {
   Sparkles,
   Award,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -49,6 +50,16 @@ const InterviewPage = () => {
       console.error('Failed to load history:', err);
     } finally {
       setLoadingHistory(false);
+    }
+  };
+
+  const handleDeleteInterview = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await api.delete(`/interview/${id}`);
+      setHistory((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Failed to delete interview:', err);
     }
   };
 
@@ -224,9 +235,11 @@ const InterviewPage = () => {
                     onChange={(e) => setNumQuestions(Number(e.target.value))}
                     className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                   >
-                    <option value={1}>1 Question (Quick Test)</option>
-                    <option value={3}>3 Questions (Standard)</option>
-                    <option value={5}>5 Questions (Comprehensive)</option>
+                    <option value={3}>3 Questions </option>
+                    <option value={5}>5 Questions</option>
+                    <option value={10}>10 Questions</option>
+                    <option value={20}>20 Questions</option>
+                    <option value={30}>30 Questions</option>
                   </select>
                 </div>
               </div>
@@ -446,6 +459,7 @@ const InterviewPage = () => {
                     <th className="py-3 px-4">Questions</th>
                     <th className="py-3 px-4">Avg Score</th>
                     <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -456,11 +470,20 @@ const InterviewPage = () => {
                       <td className="py-3.5 px-4 text-slate-500">{item.questions_count} questions</td>
                       <td className="py-3.5 px-4">
                         <span className="font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/60">
-                          {item.score ? `${Math.round(item.score)}%` : 'In Progress'}
+                          {item.score !== null && item.score !== undefined ? `${Math.round(item.score)}%` : '0%'}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-xs text-slate-400">
                         {new Date(item.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          onClick={(e) => handleDeleteInterview(item.id, e)}
+                          title="Delete interview from history"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   ))}

@@ -51,6 +51,14 @@ def test_auth_and_profile_flow(client):
     assert update_res.json()["target_role"] == "Senior Cloud Engineer"
     assert "AWS" in update_res.json()["skills"]
 
+    # 5. Delete Account
+    del_acc_res = client.delete("/api/profile", headers=headers)
+    assert del_acc_res.status_code == 200
+
+    # Verification: accessing profile after deletion should fail
+    check_acc_res = client.get("/api/profile", headers=headers)
+    assert check_acc_res.status_code == 401
+
 def test_career_analysis(client):
     # Register candidate
     reg_res = client.post("/api/auth/register", json={
@@ -114,6 +122,10 @@ def test_interview_flow(client):
     hist_res = client.get("/api/interview/history", headers=headers)
     assert hist_res.status_code == 200
     assert len(hist_res.json()) >= 1
+
+    # 4. Delete Interview
+    del_res = client.delete(f"/api/interview/{interview_id}", headers=headers)
+    assert del_res.status_code == 200
 
 def test_roadmap_flow(client):
     reg_res = client.post("/api/auth/register", json={
