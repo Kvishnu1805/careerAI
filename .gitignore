@@ -1,0 +1,115 @@
+# ========================================================
+# Root .gitignore for CareerAI (Frontend & Backend)
+# ========================================================
+
+# --------------------------------------------------------
+# 1. Environment Variables & Secrets (CRITICAL)
+# --------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.env
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+*.pem
+*.key
+
+# --------------------------------------------------------
+# 2. Python & Virtual Environments
+# --------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments (handles venv, vnv, .venv, env)
+venv/
+vnv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+backend/venv/
+backend/vnv/
+backend/.venv/
+backend/env/
+
+# Python Testing & Caches
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# --------------------------------------------------------
+# 3. Databases & Uploaded Files
+# --------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+careerai.db
+test_careerai.db
+backend/careerai.db
+backend/test_careerai.db
+uploads/
+backend/uploads/
+*.pdf
+
+# --------------------------------------------------------
+# 4. Node.js & Frontend Artifacts
+# --------------------------------------------------------
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# --------------------------------------------------------
+# 5. OS & Editor Specific Files
+# --------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editors (VSCode, JetBrains)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
