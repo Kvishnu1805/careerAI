@@ -4,7 +4,7 @@ import bcrypt
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from backend.config import settings
 from backend.database import get_db
 from backend.models.user import User
@@ -21,7 +21,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     pwd_bytes = password.encode('utf-8')[:72]
-    salt = bcrypt.gensalt()
+    # rounds=10 provides standard security while running ~4x faster than default rounds=12
+    salt = bcrypt.gensalt(rounds=10)
     return bcrypt.hashpw(pwd_bytes, salt).decode('utf-8')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -52,7 +53,7 @@ def get_current_user(
     except (JWTError, ValueError):
         raise credentials_exception
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).options(joinedload(User.skills)).filter(User.id == user_id).first()
     if user is None:
         raise credentials_exception
     return user

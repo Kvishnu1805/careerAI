@@ -111,7 +111,7 @@ const ResumeAnalyzerPage = () => {
   const analysis = resumeData?.analysis;
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-8 animate-fadeIn w-full min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">

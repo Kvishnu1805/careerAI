@@ -11,10 +11,11 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('careerai_token') || null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch updated profile on mount if token exists
+  // Fetch updated profile only on initial app mount if an existing token was stored
   useEffect(() => {
     const fetchUser = async () => {
-      if (token) {
+      const storedToken = localStorage.getItem('careerai_token');
+      if (storedToken) {
         try {
           const res = await api.get('/profile');
           setUser(res.data);
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     fetchUser();
-  }, [token]);
+  }, []);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });

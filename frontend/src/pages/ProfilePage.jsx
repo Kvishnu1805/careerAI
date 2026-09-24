@@ -95,7 +95,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 animate-fadeIn w-full min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -120,14 +120,14 @@ const ProfilePage = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 w-full min-w-0">
         {/* Basic Info Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5 w-full min-w-0">
           <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
             Account Information
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 w-full min-w-0">
             <div>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
                 Full Name
@@ -168,8 +168,8 @@ const ProfilePage = () => {
         </div>
 
         {/* Skills Inventory Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6 w-full min-w-0">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 gap-2">
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 Skills Inventory
@@ -178,13 +178,13 @@ const ProfilePage = () => {
                 Add technologies, frameworks, and tools you have experience with.
               </p>
             </div>
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200/70 dark:border-indigo-800">
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200/70 dark:border-indigo-800 flex-shrink-0">
               {skills.length} skills listed
             </span>
           </div>
 
           {/* Add skill input */}
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 w-full min-w-0">
             <input
               type="text"
               value={skillInput}
@@ -195,13 +195,13 @@ const ProfilePage = () => {
                   handleAddSkill();
                 }
               }}
-              placeholder="Add skill (e.g. Redis, GraphQL, Next.js)"
-              className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Add skill (e.g. Redis, Next.js)"
+              className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button
               type="button"
               onClick={() => handleAddSkill()}
-              className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold flex items-center space-x-1.5 transition-colors shadow-xs"
+              className="px-4 sm:px-5 py-2.5 bg-slate-800 hover:bg-slate-900 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold flex items-center space-x-1.5 transition-colors shadow-xs flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Add</span>
@@ -209,7 +209,7 @@ const ProfilePage = () => {
           </div>
 
           {/* Active Skills Cloud */}
-          <div>
+          <div className="w-full min-w-0">
             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
               Your Current Skills
             </label>
@@ -238,7 +238,7 @@ const ProfilePage = () => {
           </div>
 
           {/* Suggested Skills to Add */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 w-full min-w-0">
             <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
               <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
               <span>Popular Suggestions (Click to Add)</span>
@@ -259,11 +259,11 @@ const ProfilePage = () => {
         </div>
 
         {/* Action Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end w-full">
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-md shadow-indigo-600/30 transition-all disabled:opacity-50"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-md shadow-indigo-600/30 transition-all disabled:opacity-50"
           >
             {loading ? (
               <LoadingSpinner size="sm" text="" />
@@ -278,7 +278,7 @@ const ProfilePage = () => {
       </form>
 
       {/* Danger Zone: Account Deletion */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-rose-200/80 dark:border-rose-900/50 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 md:p-8 border border-rose-200/80 dark:border-rose-900/50 shadow-xs space-y-4 w-full min-w-0">
         <div className="flex items-center space-x-3 text-rose-600 dark:text-rose-400">
           <AlertTriangle className="w-5 h-5 flex-shrink-0" />
           <h2 className="text-base font-bold">Danger Zone</h2>
@@ -297,7 +297,7 @@ const ProfilePage = () => {
           <button
             type="button"
             onClick={() => setShowDeleteModal(true)}
-            className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-sm font-semibold transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-sm font-semibold transition-colors flex-shrink-0"
           >
             <Trash2 className="w-4 h-4" />
             <span>Delete Account</span>

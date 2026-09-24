@@ -12,13 +12,15 @@ try:
     if db_url.startswith("sqlite"):
         engine = create_engine(db_url, connect_args={"check_same_thread": False})
     else:
-        # MySQL or PostgreSQL
+        # MySQL (TiDB) or PostgreSQL with optimized connection pooling for cloud latencies
         engine = create_engine(
             db_url,
             pool_pre_ping=True,
-            pool_recycle=3600,
-            pool_size=10,
-            max_overflow=20
+            pool_recycle=280,
+            pool_size=5,
+            max_overflow=10,
+            pool_timeout=15,
+            connect_args={"connect_timeout": 10}
         )
         # Test connection
         with engine.connect() as conn:

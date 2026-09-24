@@ -40,5 +40,10 @@ api.interceptors.response.use(
   }
 );
 
+// Warm up backend connection and wake Render instance on client load
+if (typeof window !== 'undefined') {
+  api.get('/health').catch(() => {});
+}
+
 export default api;
 
