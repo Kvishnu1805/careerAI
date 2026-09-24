@@ -1,6 +1,6 @@
 # CareerAI — Production-Ready AI Career & Interview Assistant
 
-CareerAI is a modern, responsive full-stack platform designed to accelerate career growth. It enables candidates to upload and analyze resumes, benchmark their skillset against industry standards, simulate live technical and behavioral interviews with instant AI grading, follow personalized 6-week learning roadmaps, and consult an AI career mentor.
+CareerAI is a full-stack AI platform built to accelerate career readiness. Candidates upload resumes for instant AI analysis, benchmark their skills against industry standards, simulate technical and behavioral interviews with real-time AI grading, and follow personalized learning roadmaps — powered by LLMs (OpenAI/Gemini), with an optional RAG-based AI career mentor.
 
 ---
 
